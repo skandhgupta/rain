@@ -15,6 +15,7 @@ def configure (conf):
 def build (bld):
     bld (rule='python ../deps/virtualenv.py '\
             '--no-site-packages '\
+            '--distribute '\
             '--extra-search-dir=../deps '\
             '--never-download '\
             '.')
