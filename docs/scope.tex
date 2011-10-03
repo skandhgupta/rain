@@ -1,0 +1,89 @@
+\documentclass[10pt]{article}
+\usepackage[pdftex]{graphicx}
+\usepackage{url}
+\usepackage[left=2cm,top=2cm,right=2cm]{geometry}
+\pagestyle {empty}
+
+\newcommand {\tilda} {$\sim$}
+\newenvironment{my_itemize}
+{\begin{itemize}
+  \setlength{\itemsep}{0pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}}
+{\end{itemize}}
+
+\newcommand {\myfig}[2]{
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics{#1.png}
+\caption{#2}
+\label{fig:#1}
+\end{center}
+\end{figure}
+}
+
+\begin{document}
+
+\title{Rain\\
+Realtime 3D Rendering in the Cloud}
+\author{Team One}
+\maketitle
+
+\begin{abstract}
+We propose to build a cloud that enables real time 3D rendering of interactive models and worlds. This would allow the users of the system to access high quality graphics from their web browsers, without the need to have expensive graphics hardware.
+\end{abstract}
+
+\section{Team Details}
+Team Number: 1
+\begin{my_itemize}
+\item Manav Rathi - 201005010
+\item Mukund Kumar - 201005013
+\item Pranay Sharma - 201006004
+\item Skandh Gupta - 201005029
+\end{my_itemize}
+
+\section{Introduction}
+3D Rendering was one of the first tasks to take advantage of the scalability provided by Cloud computing, and such clouds came to be called as \emph{Renderfarms}. Currently, there are wide range of such renderfarms availaible -  from \emph{RenderMan}, a commercial cloud meant for Pixar's internal use, to services like \emph{Renderfarm.fi}\cite{rfarm}, which is free and based on peer resource sharing.
+
+However, all of the current renderfarms provide what is called as \emph{Offline} rendering. As the name suggests, this is a batch service, wherein you upload the 3D model to the cloud, and can download the rendered image/video later on. The other type of rendering, \emph{Online}\footnote{a.k.a Realtime} rendering, is in general infeasible on general hardware. But an important exception is computer games, which push commodity hardware to the limit and allow realtime 3D, although of a much reduced quality than offline rendering. 
+
+But even for games, the problem with putting them on the cloud is that almost all games are coded to be run on a single computer, and there seems to be no easy way to distribute work without the latencies getting unacceptable. We know of only one company (\textsc{Otoy}\cite{otoy}) which is working on \emph{Gaming as a Service}, and they are still in a prototype stage.
+
+Thus, \textbf{our project is the prototype of a completely new idea that, to our knowledge, has no existing functional implementation}. We believe that \emph{Gaming as a Service} is going to be the next killer application of the Cloud paradigm, but there are still a lot of seemingly unsolvable techincal hurdles before it becomes a reality.
+
+
+\section{Scope}
+We want to build a prototype system that will demonstrate the feasibility of Realtime 3D rendering. Currently we're aiming at the following event flow:
+\begin{my_itemize}
+\item User will connect to a web server via a browser. 
+\item The web server will request our rendering cloud to start the render of a preselected 3D world model. This initial setup may take some seconds.
+\item Subsequently, the rendering cloud will start streaming a video rendering of the current 3D world state to the user's web browser.
+\item The user will then try to move within the world using the keyboard/mouse. These events will be relayed by the browser to the webserver, which'll make the requisite modifications in the camera position of the 3D model, and then pass a refresh request onto the cloud, which'll then make the requisite modifications to the movie stream that is being relayed. All this will happen in realtime.
+\end{my_itemize}
+
+\section{High Level Architecture}
+The \textsc{Rain} system will have four main components:
+\begin{my_itemize}
+\item Rendering Engine (on each slave node) - This will be the part that handles the actual conversion of the 3D model to the video.
+\item Engine Manager (on each slave node) - This will set up and manage the Rendering Engine on that node according to the commands sent by the Master.
+\item Master Node: This will take care of dividing the 3D model in such a way that it can be parallely rendered on multiple Rendering Engines. It will also coordinate all the Rendering Engines, and merge all their outputs into a single video stream.
+\item Web Server: This will provide the interface to our system.
+\end{my_itemize}
+
+\section{Tools}
+\begin{my_itemize}
+\item Rendering Engine: Once we have suitably divided the scene into multiple independent components, we'll be using third party open source software/libraries to do the actual rendering of each part. Currently we are looking into two main alternatives in this regard -
+\begin{my_itemize}
+\item \textsc{POV-Ray}. This is a Raytracing software, and provides excellent graphics quality. However, it will be hard to get this to run with subsecond rendering times.
+\item \textsc{Irrlicht}. This is a 3D Rendering Engine. The render quality is reduced with compared to raytracing, but response times are faster.
+\end{my_itemize}
+\item Engine Manager and Master: We cannot use Hadoop for our system because it is a inherently a batch processing system, and the latencies are too high to be of any use in a real time system.  So we will build our own communication framework which is suitable for real time response.
+\item The programming language will be Python. However, depending on the final choice of the Rendering Engine, we might also write certain parts of the system in C/C++.
+\end{my_itemize}
+
+\begin{thebibliography}{2}
+\bibitem{rfarm} \url{http://renderfarm.fi/}
+\bibitem{otoy} \url{http://www.otoy.com/}
+\end{thebibliography}
+
+\end{document}

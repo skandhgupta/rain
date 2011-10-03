@@ -1,0 +1,56 @@
+# wrapper around virtualenv's bin/activate for simple activate/deactivate hooks
+
+ORIG_ACTIVATE=build/bin/activate
+
+ORIG_PS1=$PS1
+on_activate () {
+    push_var PIP_DOWNLOAD_CACHE $PWD/deps
+    PS1="(`basename $PWD`)$ORIG_PS1"
+    export PS1
+    unset ORIG_PS1
+}
+
+on_deactivate () {
+    pop_var PIP_DOWNLOAD_CACHE
+}
+
+# the remaining file is just infrastructure
+# and shouldn't normally need to be modified
+
+isset() { [ ${!1-X} == ${!1-Y} ]; }
+
+push_var () {
+    if isset $1; then
+        eval "export _OLD_$1=\"\$$1\""
+    fi
+    eval "export $1=\"$2\""
+}
+
+pop_var () {
+    if isset "_OLD_$1"; then
+        eval "export $1=\"\$_OLD_$1\""
+        unset "_OLD_$1"
+    else
+        unset $1
+    fi
+}
+
+# bash function rename
+# http://mivok.net/2009/09/20/bashfunctionoverride.html
+save_function() {
+    local ORIG_FUNC_DEF=$(declare -f $1)
+    local RENAMED_DEF="$2${ORIG_FUNC_DEF#$1}"
+    eval "$RENAMED_DEF"
+}
+
+source $ORIG_ACTIVATE
+save_function deactivate old_deactivate
+unset -f save_function
+
+deactivate () { 
+    on_deactivate
+    old_deactivate nondestructive
+    unset -f on_deactivate old_deactivate deactivate
+}
+on_activate
+
