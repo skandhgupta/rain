@@ -1,6 +1,4 @@
-build/
-local/
+ven/
+var/
 *.pyc
 *.swp
-.waf*/
-.lock-waf*
