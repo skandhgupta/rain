@@ -1,10 +1,10 @@
 # wrapper around virtualenv's bin/activate for simple activate/deactivate hooks
 
-ORIG_ACTIVATE=build/bin/activate
+ORIG_ACTIVATE=ven/bin/activate
 
 ORIG_PS1=$PS1
 on_activate () {
-    push_var PIP_DOWNLOAD_CACHE $PWD/deps
+    push_var PIP_DOWNLOAD_CACHE $PWD/dep
     PS1="(`basename $PWD`)$ORIG_PS1"
     export PS1
     unset ORIG_PS1
