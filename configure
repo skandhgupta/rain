@@ -41,7 +41,7 @@ def kick_user (err):
 def generate_help (features):
     out = StringIO ()
     for f in features:
-        out.write ('  %s\t\t%s [%s]' % f)
+        out.write ('  %s\t\t%s [%s]\n' % f)
     return out.getvalue ()
 
 fval = {}
@@ -81,7 +81,10 @@ out = StringIO ()
 
 for f, e in fval.items ():
     log ('Configuring %s... ', f, continued=True)
-    e = globals ()[f] (e, out, log)
+    try:
+        e = globals ()[f.replace ('-', '_')] (e, out, log)
+    except:
+        sys.exit ()
     log ('enabled' if e else 'disabled')
 
 log ('Writing configuration to Makefile... ', continued=True)
