@@ -1,13 +1,18 @@
 dep := dep
 ven := ven
 patch := $(dep)/patch
+pip := $(ven)/bin/pip
 
 config := $(or $(wildcard .Makefile.config), \
 	$(error Please run ./configure before make))
 include $(config)
 
-.PHONY: all $(povray)
-all: $(povray)
+.PHONY: all $(povray) 
+all: $(povray) $(ven)/var/requirements.txt
+
+$(ven)/var/requirements.txt: $(ven) $(dep)/requirements.txt
+	PIP_DOWNLOAD_CACHE=$(dep) $(pip) install -r $(dep)/requirements.txt
+	cp $(dep)/requirements.txt $(ven)/var/requirements.txt
 
 povray: $(ven)/bin/povray
 $(ven)/bin/povray: $(ven)
