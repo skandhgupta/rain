@@ -2,8 +2,12 @@ dep := dep
 ven := ven
 patch := $(dep)/patch
 
-.PHONY: all povray
-all: $(ven)/bin/povray
+config := $(or $(wildcard .Makefile.config), \
+	$(error Please run ./configure before make))
+include $(config)
+
+.PHONY: all $(povray)
+all: $(povray)
 
 povray: $(ven)/bin/povray
 $(ven)/bin/povray: $(ven)

@@ -1,4 +1,5 @@
 ven/
 local/
+.Makefile.config
 *.pyc
 *.swp

@@ -3,89 +3,88 @@
 Configuration Script
 
 Each of the following features can be enabled by using the `-name' option and
-disabled by using `-no-name'. The ones marked by a `+' are enabled by default.
+disabled by using `-no-name'. Default values are indicated in brackets.
 
-+ povray                install povray
+%s
 
 Generic Options:
   -h, --help            display this message and exit
   -q, --quiet           be quiet
 """
 
-# XXX ordering?
-features = {
-    'povray': True
-    }
+# generic runner script
+# make your project specific changes in configure.py
 
-import logging
+import sys
+import getopt
+from StringIO import StringIO
 
+try: sys.dont_write_bytecode = True
+except: pass
+from configure import *
 
-def povray (enabled, out, log):
-    out.write (repr ((enabled, out, log)))
+def create_logger (enabled, stream):
+    def log_null (*args, **kw):
+        pass
+    def log_stream (msg, *args, **kwargs):
+        stream.write (msg % args)
+        if not kwargs.get ('continued', False):
+            stream.write ('\n')
+        stream.flush ()
+    return log_stream if enabled else log_null
 
+def kick_user (err):
+    print ('configure: %s' % err)
+    print ("Try `%s --help' for more information." % sys.argv[0])
+    sys.exit (2)
 
-# http://bytes.com/topic/python/answers/717264-logging-module-trailing-newlines
-class NoNewlineStreamHandler (logging.StreamHandler):
-    def emit (self, record):
-        try:
-            msg = self.format (record)
-            fs = '%s' if hasattr (record, 'continued') else '%s\n'
-            self.stream.write (fs % msg)
-            self.stream.flush ()
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            self.handleError (record)
+def generate_help (features):
+    out = StringIO ()
+    for f in features:
+        out.write ('  %s\t\t%s [%s]' % f)
+    return out.getvalue ()
 
-                
-if __name__ == '__main__':
-    import sys
-    import getopt
-    from StringIO import StringIO
+fval = {}
+for f in features:
+    fval[f[0]] = f[2]
 
-    def kick_user (err):
-        print ('configure: %s' % err)
-        print ("Try `%s --help' for more information." % sys.argv[0])
-        sys.exit (2)
+try:
+    opts, args = getopt.getopt (sys.argv[1:], 'qh',
+            ['quiet', 'help'] \
+                    + fval.keys () \
+                    + ['no-'+f for f in fval.keys ()])
+except getopt.GetoptError, err:
+    kick_user (err)
 
-    try:
-        opts, args = getopt.getopt (sys.argv[1:], 'qh',
-                ['quiet', 'help'] \
-                        + features.keys () \
-                        + ['-no-'+f for f in features.keys ()])
-    except getopt.GetOptError, err:
-        kick_user (err)
+if args:
+    kick_user ('unexpected arguments (%s)' % repr (args))
 
-    if args:
-        kick_user ('unexpected arguments (%s)' % repr (args))
+quiet = False
 
-    log = logging.getLogger ('configure')
-    log.addHandler (NoNewlineStreamHandler ())
-    log.setLevel (logging.DEBUG)
-
-    for o, a in opts:
-        if o in ('-h', '--help'):
-            print (__doc__)
-            sys.exit ()
-        elif o in ('-q', '--quiet'):
-            log.setLevel (logging.WARN)
+for o, a in opts:
+    if o in ('-h', '--help'):
+        print (__doc__ % generate_help (features))
+        sys.exit ()
+    elif o in ('-q', '--quiet'):
+        quiet = True
+    else:
+        if o.startswith ('--no-'):
+            f = o[5:]
+            e = False
         else:
-            if o.beginswith ('--no-'):
-                f = o[5:]
-                e = False
-            else:
-                f = o[2:]
-                e = True
-            features[f] = e
+            f = o[2:]
+            e = True
+        fval[f] = e
 
-    out = StringIO () 
-    continued = dict (no_newline=True)
-    for f, e in features.items ():
-        log.info ('%s...', f, extra=continued)
-        e = getattr (sys.modules[__name__], f) (e, out, log)
-        log.info ('Enabled' if e else 'Disabled')
+log = create_logger (not quiet, sys.stdout)
+out = StringIO () 
 
-    log.info ('Writing configuration to Makefile...', extra=continued)
-    with open ('.Makefile.config', 'w') as f:
-        f.write (out.getvalue ())
-    log.info ('Done')
+for f, e in fval.items ():
+    log ('Configuring %s... ', f, continued=True)
+    e = globals ()[f] (e, out, log)
+    log ('enabled' if e else 'disabled')
+
+log ('Writing configuration to Makefile... ', continued=True)
+with open ('.Makefile.config', 'w') as f:
+    f.write (out.getvalue ())
+log ('done')
