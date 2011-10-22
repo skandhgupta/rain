@@ -1,22 +1,24 @@
-"""WSGI server"""
+"""WSGI HTTP server"""
 
 from gevent import pywsgi as wsgi
-from wsgi_app import wsgi_app
+import wsgi_app
 
 class WSGIHandler_WithCustomLogger(wsgi.WSGIHandler):
 
     def log_request(self):
-        self.server.log.info (self.format_request())
+        self.server.log.info (self.format_request ())
 
     def log_error(self, msg, *args):
         log = self.server.log
-        def gracefully_die ():
+
+        def log_traceback ():
             log.error ('exception while logging error: %r %r', msg, args)
-            log.error (traceback.format_exc())
+            log.error (traceback.format_exc ())
+
         try:
             message = msg % args
         except Exception:
-            gracefully_die ()
+            log_traceback ()
         try:
             message = '%s: %s' % (self.socket, message)
         except Exception:
@@ -24,12 +26,11 @@ class WSGIHandler_WithCustomLogger(wsgi.WSGIHandler):
         try:
             log.error (message)
         except Exception:
-            gracefully_die ()
+            log_traceback ()
 
  
-def start_webserver (interface, port, log):
-    log.info ('Starting webserver on %s:%s', interface, port)
-    gevent.pywsgi.WSGIServer ((interface, port), application=wsgi_app, log=log,
-            handler_class=WSGIHandler_WithCustomLogger).serve_forever()
-
-start_webserver (None, '', '9999')
+def start (interface, port, log):
+    log.info ('starting webserver on %s:%s', interface, port)
+    wsgi.WSGIServer ((interface, port), application=wsgi_app.main, log=log, 
+            handler_class=WSGIHandler_WithCustomLogger
+            ).serve ()

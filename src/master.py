@@ -9,20 +9,23 @@ Rain Master
 """
 
 import sys
+import getopt
 import logging
 
 import wsgi_httpserver
 import master_server
 
-def parse_commandline (argv, opts):
+ARGV0 = 'master'
+
+def parse_commandline (argv):
 
     def print_error (err):
-        print ('%s: %s' % (argv[0], err))
-        print ("Try `%s --help' for more information." % argv[0])
+        print ('%s: %s' % (ARGV0, err))
+        print ("Try `%s --help' for more information." % ARGV0)
 
     try:
         opts, args = getopt.getopt (argv[1:], 'hi:',
-                ['help', 'interface', 'port-http', 'port-master'])
+                ['help', 'interface=', 'port-http=', 'port-master='])
     except getopt.GetoptError, err:
         print_error (err)
         return 2
@@ -31,30 +34,29 @@ def parse_commandline (argv, opts):
         print_error ('unexpected arguments (%s)' % repr (args))
         return 2
 
-    opts = { 'interface': '' }
+    res = { 'interface': '' }
     for o, a in opts:
         if o in ('-h', '--help'):
-            print (__doc__ % argv[0])
+            print (__doc__ % ARGV0)
             return 0
         elif o in ('-i', '--interface'):
-            opts['interface'] = a
+            res['interface'] = a
         elif o in ('--port-master'):
-            opts['port-master'] = a
+            res['port-master'] = a
         elif o in ('--port-http'):
-            opts['port-http'] = a
+            res['port-http'] = a
 
     for mandatory in ['port-master', 'port-http']:
-        if not mandatory in opts:
+        if not mandatory in res:
             print_error ('--%s is a mandatory requirement' % mandatory)
             return 2
 
-    return opts
+    return res
 
 
 def create_logger (level=logging.INFO):
-    log = logging.getLogger (__name__)
-    log.setLevel (level)
-    return log
+    logging.basicConfig (level=logging.INFO, stream=sys.stderr)
+    return logging.getLogger (ARGV0)
 
 
 if __name__ == '__main__':
