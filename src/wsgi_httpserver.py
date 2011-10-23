@@ -31,6 +31,8 @@ class WSGIHandler_WithCustomLogger(wsgi.WSGIHandler):
  
 def start (interface, port, log):
     log.info ('starting webserver on %s:%s', interface, port)
-    wsgi.WSGIServer ((interface, port), application=wsgi_app.main, log=log, 
-            handler_class=WSGIHandler_WithCustomLogger
-            ).serve ()
+    server = wsgi.WSGIServer ((interface, int (port)), 
+            application=wsgi_app.main, 
+            log=log, handler_class=WSGIHandler_WithCustomLogger)
+    server.start ()
+    return server

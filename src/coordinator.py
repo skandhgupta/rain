@@ -31,9 +31,11 @@ def echo(socket, address):
 def myecho(socket, address):
     socket.sendall ('server was connected')
 
-def start (*args):
+def start (interface, port, log):
+    log.info ('starting coordinator on %s:%s', interface, port)
     server = StreamServer(('0.0.0.0', 6000), myecho)
     # to start the server asynchronously, use its start() method;
     # we use blocking serve_forever() here because we have no other jobs
     print 'Starting echo server on port 6000'
-    server.serve_forever()
+    server.start ()
+    return server

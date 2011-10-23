@@ -1,4 +1,4 @@
-"""usage: %s [OPTS]
+"""usage: %s [OPTS] config-file
 Rain Master
 
   -h, --help            display this message and exit
@@ -6,11 +6,15 @@ Rain Master
   -i, --interface       (default: localhost)
 *     --port-http=NUM   
 *     --port-master=NUM
+
+note: command-line flags will override settings in the config-file
 """
 
 import sys
 import getopt
 import logging
+import gevent
+import os.path
 
 import wsgi_httpserver
 import master_server
@@ -24,17 +28,23 @@ def parse_commandline (argv):
         print ("Try `%s --help' for more information." % ARGV0)
 
     try:
-        opts, args = getopt.getopt (argv[1:], 'hi:',
+        opts, args = getopt.gnu_getopt (argv[1:], 'hi:',
                 ['help', 'interface=', 'port-http=', 'port-master='])
     except getopt.GetoptError, err:
         print_error (err)
         return 2
 
-    if args:
-        print_error ('unexpected arguments (%s)' % repr (args))
-        return 2
-
     res = { 'interface': '' }
+    if args:
+        if len (args) > 1:
+            print_error ('unexpected arguments (%s)' % repr (args))
+            return 2
+
+        fn = args[0]
+        print ("loading configuration from '%s'" % os.path.abspath (fn))
+        with open (fn) as f:
+            res.update (eval ('{' + f.read () + '}'))
+
     for o, a in opts:
         if o in ('-h', '--help'):
             print (__doc__ % ARGV0)
@@ -65,6 +75,20 @@ if __name__ == '__main__':
     if isinstance (opts, int): sys.exit (opts)
     log = create_logger ()
 
-    wsgi_httpserver.start (opts['interface'], opts['port-http'], log)
-    master_server.start (opts['interface'], opts['port-master'], log)
+    log.info ('hello')
+
+    servers = [
+        wsgi_httpserver.start (opts['interface'], opts['port-http'], log),
+        master_server.start (opts['interface'], opts['port-master'], log)]
+
+    try:
+        gevent.event.Event ().wait ()
+    except KeyboardInterrupt:
+        print
+        log.info ('recd KeyboardInterrupt; shutting down')
+
+    map (lambda x: x.stop (), servers)
+
+    log.info ('bye')
+
 

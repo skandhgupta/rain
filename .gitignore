@@ -3,3 +3,4 @@ local/
 .Makefile.config
 *.pyc
 *.swp
+src/Session.vim
