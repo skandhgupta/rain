@@ -1,4 +1,15 @@
-#!/usr/bin/env python
+"""usage: %s [OPTS] config-file
+Rain Worker
+
+  -h, --help            display this message and exit
+      --interface=IP    (default: localhost)
+*     --port=NUM   
+*     --master-addr=NUM   
+*     --master-port=NUM   
+
+note: command-line flags will override settings in the config-file
+"""
+
 """Simple server that listens on port 6000 and echos back every input to the client.
 
 Connect to it with:
@@ -39,3 +50,10 @@ def start (interface, port, log):
     print 'Starting echo server on port 6000'
     server.start ()
     return server
+
+import option
+if __name__ == '__main__':
+    opt = option.parse (__doc__, 
+            ['port=', 'interface=', 'master-addr=', 'master-port='], 
+            ['port', 'master-addr', 'master-port'], {'interface': ''})
+    print 'hello'
