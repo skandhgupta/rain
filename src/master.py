@@ -3,9 +3,8 @@ Rain Master
 
   -h, --help            display this message and exit
   -v, --verbose         explain what is being done (XXX)
-  -i, --interface       (default: localhost)
-*     --port-http=NUM   
-*     --port-master=NUM
+  -i, --interface=IP    (default: localhost)
+*     --port=NUM   
 
 note: command-line flags will override settings in the config-file
 """
@@ -29,7 +28,7 @@ def parse_commandline (argv):
 
     try:
         opts, args = getopt.gnu_getopt (argv[1:], 'hi:',
-                ['help', 'interface=', 'port-http=', 'port-master='])
+                ['help', 'interface=', 'port='])
     except getopt.GetoptError, err:
         print_error (err)
         return 2
@@ -51,12 +50,10 @@ def parse_commandline (argv):
             return 0
         elif o in ('-i', '--interface'):
             res['interface'] = a
-        elif o in ('--port-master'):
-            res['port-master'] = a
-        elif o in ('--port-http'):
-            res['port-http'] = a
+        elif o in ('--port'):
+            res['port'] = a
 
-    for mandatory in ['port-master', 'port-http']:
+    for mandatory in ['port']:
         if not mandatory in res:
             print_error ('--%s is a mandatory requirement' % mandatory)
             return 2
@@ -65,8 +62,9 @@ def parse_commandline (argv):
 
 
 def create_logger (level=logging.INFO):
-    logging.basicConfig (level=logging.INFO, stream=sys.stderr)
-    return logging.getLogger (ARGV0)
+    logging.basicConfig (level=logging.INFO, stream=sys.stderr, 
+            format='%(asctime)s %(levelname)s %(message)s')
+    return logging.getLogger ()
 
 
 if __name__ == '__main__':
@@ -77,17 +75,17 @@ if __name__ == '__main__':
 
     log.info ('hello')
 
-    servers = [
-        wsgi_httpserver.start (opts['interface'], opts['port-http'], log),
-        master_server.start (opts['interface'], opts['port-master'], log)]
+    # TODO
+    # pre-fork hub
+    # http://groups.google.com/group/gevent/browse_thread/thread/44b756976698503b
 
+    server = wsgi_httpserver.create (opts['interface'], opts['port'], log)
     try:
-        gevent.event.Event ().wait ()
+        server.serve_forever ()
     except KeyboardInterrupt:
         print
         log.info ('recd KeyboardInterrupt; shutting down')
-
-    map (lambda x: x.stop (), servers)
+        server.stop ()
 
     log.info ('bye')
 
