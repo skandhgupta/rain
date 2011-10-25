@@ -1,9 +1,13 @@
 """WSGI HTTP server"""
 
-from gevent import pywsgi as wsgi
+from gevent import pywsgi
 import wsgi_app
 
-class WSGIHandler_WithCustomLogger(wsgi.WSGIHandler):
+class CustomPyWSGIHandler (pywsgi.WSGIHandler):
+
+    def update_environ (self):
+        pywsgi.WSGIHandler.update_environ (self)
+        self.environ['rain.log'] = self.server.log
 
     def log_request(self):
         self.server.log.info (self.format_request ())
@@ -31,7 +35,7 @@ class WSGIHandler_WithCustomLogger(wsgi.WSGIHandler):
  
 def create (interface, port, log):
     log.info ('starting webserver on %s:%s', interface, port)
-    server = wsgi.WSGIServer ((interface, int (port)), 
+    server = pywsgi.WSGIServer ((interface, int (port)), 
             application=wsgi_app.main, 
-            log=log, handler_class=WSGIHandler_WithCustomLogger)
+            log=log, handler_class=CustomPyWSGIHandler)
     return server
