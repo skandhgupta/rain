@@ -5,10 +5,6 @@ import wsgi_app
 
 class CustomPyWSGIHandler (pywsgi.WSGIHandler):
 
-    def update_environ (self):
-        pywsgi.WSGIHandler.update_environ (self)
-        self.environ['rain.log'] = self.server.log
-
     def log_request(self):
         self.server.log.info (self.format_request ())
 
@@ -33,9 +29,10 @@ class CustomPyWSGIHandler (pywsgi.WSGIHandler):
             log_traceback ()
 
  
-def create (interface, port, log):
+def create (interface, port, log, env):
     log.info ('starting webserver on %s:%s', interface, port)
     server = pywsgi.WSGIServer ((interface, int (port)), 
             application=wsgi_app.main, 
-            log=log, handler_class=CustomPyWSGIHandler)
+            log=log, handler_class=CustomPyWSGIHandler,
+            environ=env)
     return server

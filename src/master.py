@@ -15,7 +15,7 @@ import gevent
 
 import option
 import wsgi_httpserver
-import master_server
+from coordinator import Coordinator
 
 
 def create_logger (level=logging.INFO):
@@ -36,7 +36,8 @@ if __name__ == '__main__':
     # pre-fork hub
     # http://groups.google.com/group/gevent/browse_thread/thread/44b756976698503b
 
-    server = wsgi_httpserver.create (opt['interface'], opt['port'], log)
+    env = { 'rain.log' : log, 'rain.coordinator' : Coordinator (log) }
+    server = wsgi_httpserver.create (opt['interface'], opt['port'], log, env)
     try:
         server.serve_forever ()
     except KeyboardInterrupt:

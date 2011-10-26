@@ -1,7 +1,6 @@
 from mimetypes import guess_type
 from wsgiref.headers import Headers
 from http_exception import *
-from StringIO import StringIO
 
 import handler
 
@@ -21,13 +20,13 @@ def main (env, start_response):
             status, out = serve_dynamic (path, env, header)
     except Http302, redirect:
         status = redirect.status
-        headers['Content-Type'] = redirect.content_type
-        headers['Location'] = redirect.location
+        header['Content-Type'] = redirect.content_type
+        header['Location'] = redirect.location
         out = redirect.out
     except HttpException, e:
         status = e.status
-        headers['Content-Type'] = e.content_type
-        out = redirect.out
+        header['Content-Type'] = e.content_type
+        out = e.out
 
     if 'Content-Length' not in header:
         header['Content-Length'] = str (len (out))
@@ -55,6 +54,11 @@ def serve_dynamic (path, env, header):
         # XXX cheat code
         # hit this url to refresh stale python without restarting the server
         # maybe do this automatically using pyinotify?
+        env['rain.log'].info ('reloaded handler')
         reload (handler)
         return STATUS_OK, '<em>you junkie!</em>'
-    return STATUS_OK, getattr (handler, path) (env, header)
+    try:
+        handler_fn = getattr (handler, path)
+    except AttributeError:
+        raise Http404
+    return STATUS_OK, handler_fn (env, header)
