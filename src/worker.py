@@ -39,21 +39,41 @@ def echo(socket, address):
         fileobj.flush()
         print "echoed", repr(line)
 
-def myecho(socket, address):
-    socket.sendall ('server was connected')
-
-def start (interface, port, log):
-    log.info ('starting coordinator on %s:%s', interface, port)
-    server = StreamServer(('0.0.0.0', 6000), myecho)
-    # to start the server asynchronously, use its start() method;
-    # we use blocking serve_forever() here because we have no other jobs
-    print 'Starting echo server on port 6000'
-    server.start ()
-    return server
+def handler_create (my_addr):
+    def handler (socket, address):
+        socket.sendall ('server %s did connect to me %s' % (address, my_addr))
+        socket.close ()
+    return handler
 
 import option
+from urllib2 import urlopen
+
+def register (master_url, my_addr):
+    urlopen ('%s/worker/register?ip=%s&port=%d' % ((master_url,) + my_addr))
+def unregister (master_url, my_addr):
+    urlopen ('%s/worker/unregister?ip=%s&port=%d' % ((master_url,) + my_addr))
+
 if __name__ == '__main__':
+
     opt = option.parse (__doc__, 
-            ['port=', 'interface=', 'master-addr=', 'master-port='], 
-            ['port', 'master-addr', 'master-port'], {'interface': ''})
-    print 'hello'
+            ['port=', 'interface=', 'master-url='], 
+            ['port', 'master-url'], {'interface': ''})
+    addr = (opt['interface'], opt['port'])
+    master = opt['master-url']
+
+    print 'starting worker on %s:%s' % addr
+    server = StreamServer (addr, handler_create (addr))
+    server.pre_start ()
+
+    register (master, addr)
+
+    try:
+        server.serve_forever ()
+    except KeyboardInterrupt:
+        print
+    except:
+        traceback.print_exc ()
+
+    unregister (master, addr)
+    print 'bye'
+ 

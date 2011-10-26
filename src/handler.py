@@ -26,13 +26,20 @@ def index (env, header):
     gevent.sleep (10)
     return str (count)
 
-def register_worker (env, header):
+def worker_register (env, header):
     query = parse_qs (env.get ('QUERY_STRING', ''))
-    env['rain.coordinator'].add_worker ((query['ip'][0], int (query['port'][0])))
-    raise Http302 ('/list_workers')
+    env['rain.coordinator'].worker_register ((query['ip'][0], int (query['port'][0])))
+    raise Http302 ('/worker')
 
-def list_workers (env, header):
-    # XXX FOR DEBUGGING ONLY
-    # header['Content-Type'] = 'application/json'
-    header['Content-Type'] = 'text/plain'
-    return json.dumps (env['rain.coordinator'].list_workers ())
+def worker_unregister (env, header):
+    query = parse_qs (env.get ('QUERY_STRING', ''))
+    env['rain.coordinator'].worker_unregister ((query['ip'][0], int (query['port'][0])))
+    raise Http302 ('/worker')
+
+def worker (env, header):
+    header['Content-Type'] = 'application/json'
+    return json.dumps (env['rain.coordinator'].worker_list ())
+
+def work (env, header):
+    header['Content-Type'] = 'application/json'
+    return json.dumps (env['rain.coordinator'].work ())

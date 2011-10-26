@@ -58,7 +58,7 @@ def serve_dynamic (path, env, header):
         reload (handler)
         return STATUS_OK, '<em>you junkie!</em>'
     try:
-        handler_fn = getattr (handler, path)
+        handler_fn = getattr (handler, path.replace ('/', '_'))
     except AttributeError:
         raise Http404
     return STATUS_OK, handler_fn (env, header)
