@@ -2,4 +2,4 @@ plain http response (by master) from localhost: 0.1 ms
 result of empty worker list (by master) from localhost: 
     first time: 2 ms
     subsequent: 0.2 ms
-similar times for a single localhost worker
+bi-di parameter passing with two localhost workers: 1 ms

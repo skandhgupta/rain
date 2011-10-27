@@ -7,7 +7,8 @@
 #   gevent.spawn (self.run)
 
 import gevent
-from gevent.socket import AF_INET, SOCK_STREAM
+from gevent.socket import AF_INET, SOCK_STREAM, SHUT_WR
+import socket_recv
 
 def greenlet_log_traceback (func):
     def wrapper (self, *args):
@@ -49,12 +50,13 @@ class Coordinator:
         # XXX return filter (lambda x: x, [job.value for job in jobs])
 
     @greenlet_log_traceback
-    def do_work (self, addr,token):
+    def do_work (self, addr):
         s = gevent.socket.socket (AF_INET, SOCK_STREAM)
         if s.connect_ex (addr) != 0:
             self.log.error ('worker %s AWOL', addr)
             self.worker_unregister (addr)
             return None
         s.sendall ('params')
-        return s.recv (10000)
+        s.shutdown (SHUT_WR)
+        return socket_recv.all (s)
 
