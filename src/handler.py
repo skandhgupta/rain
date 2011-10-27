@@ -41,5 +41,6 @@ def worker (env, header):
     return json.dumps (env['rain.coordinator'].worker_list ())
 
 def work (env, header):
-    header['Content-Type'] = 'application/json'
+    header['Content-Type'] = 'image/png'
+    return env['rain.coordinator'].work ()
     return json.dumps (env['rain.coordinator'].work ())

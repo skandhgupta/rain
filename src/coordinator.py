@@ -39,7 +39,7 @@ class Coordinator:
 
     def work (self):
         jobs = [gevent.spawn (self.do_work, addr) for addr in self.worker]
-        gevent.joinall (jobs, timeout=0.1)
+        gevent.joinall (jobs, timeout=0.2)
         res = []
         for i, job in enumerate (jobs):
             try:
@@ -48,7 +48,7 @@ class Coordinator:
                     res.append (v)
             except gevent.Timeout, t: 
                 self.log.error ('worker %s timed out (%s)', self.worker[i], t)
-        return res
+        return res[0]
 
     @greenlet_log_traceback
     def do_work (self, addr):
@@ -57,7 +57,7 @@ class Coordinator:
             self.log.error ('worker %s AWOL', addr)
             self.worker_unregister (addr)
             return None
-        s.sendall ('params')
+        s.sendall ('-V')
         s.shutdown (SHUT_WR)
         return socket_recv.all (s)
 
