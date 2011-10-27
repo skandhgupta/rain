@@ -6,9 +6,9 @@ import sys
 import os
 import fcntl
 
-def read_stdout (p):
-    """Read STDOUT of process *p* non-blockingly
-    Taken from gevent/examples/processes.py
+def pipe_stdout_to_socket (p, s):
+    """Pipe stdout of process to socket non-blockingly
+    Modification of gevent/examples/processes.py
     """
     fcntl.fcntl (p.stdout, fcntl.F_SETFL, os.O_NONBLOCK)
 
@@ -18,7 +18,7 @@ def read_stdout (p):
             chunk = p.stdout.read (4096)
             if not chunk:
                 break
-            chunks.append (chunk)
+            s.sendall (chunk)
         except IOError, ex:
             if ex[0] != errno.EAGAIN:
                 raise
@@ -26,4 +26,9 @@ def read_stdout (p):
         gevent.socket.wait_read (p.stdout.fileno ())
 
     p.stdout.close ()
-    return ''.join (chunks)
+
+def render_to_socket (params, socket):
+    args = ['echo', params]
+    p = subprocess.Popen (args, stdin=None, stdout=subprocess.PIPE, \
+            stderr=open ('/dev/null', 'w'))
+    pipe_stdout_to_socket (p, socket)

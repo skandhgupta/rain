@@ -43,11 +43,12 @@ class Coordinator:
         res = []
         for i, job in enumerate (jobs):
             try:
-                res.append (job.get (block=False))
+                v = job.get (block=False)
+                if v:
+                    res.append (v)
             except gevent.Timeout, t: 
                 self.log.error ('worker %s timed out (%s)', self.worker[i], t)
         return res
-        # XXX return filter (lambda x: x, [job.value for job in jobs])
 
     @greenlet_log_traceback
     def do_work (self, addr):

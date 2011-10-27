@@ -12,54 +12,17 @@ note: command-line flags will override settings in the config-file
 
 import option
 from urllib2 import urlopen
+import traceback
 import time
-import subprocess
-import gevent_subprocess
+import povray
 import socket_recv
-from gevent.server import StreamServer
+import gevent.server
 
-
-import gevent
-import subprocess
-import errno
-import sys
-import os
-import fcntl
-
-def read_stdout (p, s):
-    """Read STDOUT of process *p* non-blockingly
-    Taken from gevent/examples/processes.py
-    """
-    fcntl.fcntl (p.stdout, fcntl.F_SETFL, os.O_NONBLOCK)
-
-    chunks = []
-    while True:
-        try:
-            chunk = p.stdout.read (4096)
-            if not chunk:
-                break
-            # chunks.append (chunk)
-            s.sendall (chunk)
-        except IOError, ex:
-            if ex[0] != errno.EAGAIN:
-                raise
-            sys.exc_clear ()
-        gevent.socket.wait_read (p.stdout.fileno ())
-
-    p.stdout.close ()
-    # return ''.join (chunks)
-
-def render_current (params, socket):
-    args = ['echo', params]
-    p = subprocess.Popen (args, stdin=None, stdout=subprocess.PIPE, \
-            stderr=open ('/dev/null', 'w'))
-    read_stdout (p, socket)
 
 def handler (socket, address):
     start = time.time ()
     params = socket_recv.all (socket)
-    # socket.sendall (render_current (params))
-    render_current (params, socket)
+    povray.render_to_socket (params, socket)
     socket.close ()
     print ('%s: %0.2f ms' % (params, (time.time () - start)*1000))
 
@@ -78,7 +41,7 @@ if __name__ == '__main__':
     master = opt['master-url']
 
     print 'starting worker on %s:%s' % addr
-    server = StreamServer (addr, handler)
+    server = gevent.server.StreamServer (addr, handler)
     server.pre_start ()
 
     register (master, addr)
