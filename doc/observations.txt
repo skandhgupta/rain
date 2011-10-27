@@ -3,3 +3,4 @@ result of empty worker list (by master) from localhost:
     first time: 2 ms
     subsequent: 0.2 ms
 bi-di parameter passing with two localhost workers: 1 ms
+receiving result of echo command run on localhost workers: 3 ms

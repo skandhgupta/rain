@@ -2,8 +2,8 @@
 """usage: ./configure [OPTS]
 Configuration Script
 
-Each of the following features can be enabled by using the `-name' option and
-disabled by using `-no-name'. Default values are indicated in brackets.
+Each of the following features can be enabled by using the `--name' option and
+disabled by using `--no-name'. Default values are indicated in brackets.
 
 %s
 
