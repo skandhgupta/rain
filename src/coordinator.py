@@ -39,7 +39,7 @@ class Coordinator:
 
     def work (self):
         jobs = [gevent.spawn (self.do_work, addr) for addr in self.worker]
-        gevent.joinall (jobs, timeout=0.2)
+        gevent.joinall (jobs, timeout=0.9)
         res = []
         for i, job in enumerate (jobs):
             try:
@@ -57,7 +57,7 @@ class Coordinator:
             self.log.error ('worker %s AWOL', addr)
             self.worker_unregister (addr)
             return None
-        s.sendall ('-V')
+        s.sendall ('+SC0.5')
         s.shutdown (SHUT_WR)
         return socket_recv.all (s)
 
