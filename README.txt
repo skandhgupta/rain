@@ -5,6 +5,15 @@ $ make
 whenever you're starting a session:
 $ source activate
 
+after that, you can do:
+- starting the master:
+  $ python src/master.py etc/master.config
+- starting workers:
+  $ python src/worker.py etc/worker.config
+- if you want to start multiple workers on the same machine, you'll need
+   to override the port # on the command line
+  $ python src/worker.py etc/worker.config --port 5566
+
 
 Advanced:
 ---------
