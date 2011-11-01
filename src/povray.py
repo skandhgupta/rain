@@ -28,7 +28,7 @@ def pipe_stdout_to_socket (p, s):
     p.stdout.close ()
 
 def render_to_socket (params, socket):
-    args = ['povray', 'etc/povray.ini', params]
+    args = ['povray', 'etc/povray.ini'] + params.split ()
     p = subprocess.Popen (args, stdin=None, stdout=subprocess.PIPE, \
             stderr=open ('/dev/null', 'w'))
     pipe_stdout_to_socket (p, socket)
