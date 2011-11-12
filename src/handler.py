@@ -41,6 +41,8 @@ def worker (env, header):
     return json.dumps (env['rain.coordinator'].worker_list ())
 
 def work (env, header):
+    query = parse_qs (env.get ('QUERY_STRING', ''))
     header['Content-Type'] = 'image/png'
-    return env['rain.coordinator'].work ()
-    return json.dumps (env['rain.coordinator'].work ())
+    print int(query['x'][0]), int(query['y'][0])
+    return env['rain.coordinator'].work (int(query['x'][0]), int(query['y'][0]),int(query['lx'][0]), int(query['lz'][0]))
+    return json.dumps (env['rain.coordinator'].work (int(query['x'][0]), int(query['y'][0]),int(query['lx'][0]), int(query['lz'][0])))
