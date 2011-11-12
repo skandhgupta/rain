@@ -14,6 +14,10 @@ after that, you can do:
    to override the port # on the command line
   $ python src/worker.py etc/worker.config --port 5566
 
+For convenience, all this is wrapped up by a helper script that does not
+require you to do a 'source activate' beforehand
+  $ python src/cluster.py etc/cluster.config --start
+
 
 Advanced:
 ---------
