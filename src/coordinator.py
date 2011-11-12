@@ -12,6 +12,8 @@ import socket_recv
 from PIL import Image
 import sys
 import tempfile
+import os
+
 range = 0.0
 
 def greenlet_log_traceback (func):
@@ -61,6 +63,7 @@ class Coordinator:
 	for i in filename:
 		#f = open(i, "r")
 		initimg.append(Image.open(i))
+		os.remove(i)		
 	x=0
 	yleft=0
 	yright=initimg[0].size[1]
@@ -88,9 +91,11 @@ class Coordinator:
 	return "lol.png"
 
 	
-    def work (self):
-        jobs = [gevent.spawn (self.do_work, addr) for addr in self.worker]
-        gevent.joinall (jobs, timeout=0.9)
+    def work (self, x, y, lx, lz):
+	cam = ((lx*100 + lz)* 100 +x )* 100  + y
+	print cam
+        jobs = [gevent.spawn (self.do_work, addr, cam) for addr in self.worker]
+        gevent.joinall (jobs, timeout=2)
         res = []
         for i, job in enumerate (jobs):
             try:
@@ -100,30 +105,34 @@ class Coordinator:
             except gevent.Timeout, t: 
                 self.log.error ('worker %s timed out (%s)', self.worker[i], t)
         print 'Calling Joiner'
-	print self.count 
+	#print self.count 
 	#self.ratio = 1.0 / self.count
 	#print self.ratio
 	ImgFile = self.Join(res)
 	f = open(ImgFile,"r")
 	z = f.read()
 	f.close()
+	os.remove(ImgFile)
 	return z
 
     	
     @greenlet_log_traceback
-    def do_work (self, addr):
+    def do_work (self, addr,cam):
 	global range
+
 	self.ratio = 1.0 / self.count
         s = gevent.socket.socket (AF_INET, SOCK_STREAM)
         if s.connect_ex (addr) != 0:
             self.log.error ('worker %s AWOL', addr)
             self.worker_unregister (addr)
             return None
-	print 'Ratio is',self.ratio
+	#print 'Ratio is',self.ratio
 	#si range, (range+self.ratio)
-	param = '+SC'+str(range)+' +EC'+str((range+self.ratio))
+	if range == 1.0:
+		range = 0.0
+	param = '+p '+'+SC'+str(range)+' +EC'+str((range+self.ratio))+' +K'+str(cam)
 	range += self.ratio
-	print param
+	#print param
         s.sendall (param)
         s.shutdown (SHUT_WR)
         return socket_recv.all (s)
