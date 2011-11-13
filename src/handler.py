@@ -17,14 +17,8 @@ def test (env, header):
     return out.getvalue ()
 
 
-count = 1
 def index (env, header):
-    global count
-    env['rain.log'].info ('count = %d', count)
-    count += 1
-    import gevent
-    gevent.sleep (10)
-    return str (count)
+    raise Http302 ('/static/Rotation.html')
 
 def worker_register (env, header):
     query = parse_qs (env.get ('QUERY_STRING', ''))

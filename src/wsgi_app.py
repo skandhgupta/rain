@@ -1,12 +1,13 @@
 from mimetypes import guess_type
 from wsgiref.headers import Headers
 from http_exception import *
+import os
 
 import handler
 
 STATUS_OK = '200 OK'
 STATIC = '/static/'
-STATIC_LOCAL = 'static'
+STATIC_LOCAL = 'src'
 
 def main (env, start_response):
 
@@ -37,7 +38,7 @@ def main (env, start_response):
 def serve_static (path, env, header):
     if env['REQUEST_METHOD'] != 'GET':
         raise Http404
-    local_path = os.path.join (STATIC, path)
+    local_path = os.path.join (STATIC_LOCAL, path)
     try:
         f = open (local_path)
     except IOError:
