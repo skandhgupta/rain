@@ -5,15 +5,15 @@ import java.applet.Applet;
 import java.net.*;
 
 
-public class Rotation extends Applet implements KeyListener,FocusListener,MouseListener,MouseMotionListener 
+public class Rotation extends Applet implements KeyListener,MouseListener,MouseMotionListener 
 {
     
         int x=50,y=50,mx=50,my=60;
-        private Image img;
+        private Image img,mig2;
 	int low = 0, high= 99, step =5;
 	boolean isButtonPressed = false;
 	boolean focussed = false;
-	boolean flag = false,f1 = false;
+	boolean flag = true,f1 = false;
 	
 	Graphics bufferGraphics; 
 	
@@ -24,7 +24,7 @@ public class Rotation extends Applet implements KeyListener,FocusListener,MouseL
 	public void init()
 	{
 		img = null;
-
+		//img2 = null;
 		loadImage(x,y,mx,my);
 		addKeyListener(this);
 		addMouseListener( this );
@@ -37,8 +37,27 @@ public class Rotation extends Applet implements KeyListener,FocusListener,MouseL
 		{	
 			String url = "http://10.3.3.220:9998/work?x="+mx+"&y="+my+"&lx="+x+"&lz="+y;			
 			//String url = "http://10.3.3.220:9998/work?x=y=60&lx=50&lz=50";
-			System.out.println("URL= "+url);
-			img = getImage(new URL(url));
+			//System.out.println("URL= "+url);
+			if(flag)			
+			{img = Toolkit.getDefaultToolkit().getImage(new URL(url));
+			System.out.println("URL= "+url);}
+				
+			/*MediaTracker mt = new MediaTracker(this);
+    			mt.addImage(img, 0);
+			try {	
+			      mt.waitForID(0);//flag = true;
+			} catch (InterruptedException e) {
+			      System.err.println("Unexpected interrupt in waitForID!");
+			      return;
+    			}*/
+			int width = img.getWidth(null);
+			if (width >= 0) {
+				flag=true;
+				repaint();
+			}
+			else
+				flag = false;
+			
 		}
 		catch(Exception e){}
 	}
@@ -48,7 +67,8 @@ public class Rotation extends Applet implements KeyListener,FocusListener,MouseL
 		//loadImage(x,y,mx,my);
 		
 		//g.drawImage(img, 0, 0,318,240, this);
-		g.drawImage(img, 0, 0,320,320, this);
+		if(img != null)
+			g.drawImage(img, 0, 0,320,240, this);
 		if(f1)
 		{
 			g.setColor(Color.red);
@@ -57,14 +77,14 @@ public class Rotation extends Applet implements KeyListener,FocusListener,MouseL
 		}
 	}
    
-	public void focusGained(FocusEvent evt) {
+	/*public void focusGained(FocusEvent evt) {
         
    	}
    
 
    	public void focusLost(FocusEvent evt) {
          
-   	}
+   	}*/
 
   	 public void keyPressed(KeyEvent evt) 
   	 {          
@@ -197,14 +217,15 @@ public class Rotation extends Applet implements KeyListener,FocusListener,MouseL
                j=e.getX();
                k=e.getY();
 
-               jj = j/8 + 30;
-               kk = k/8 + 30;
+               jj = j/4 + 5;
+               kk = k/4 + 5;
                //System.out.println("You clicked on "+j+" "+k+"  "+mx+","+my);
-		if(jj != mx && kk!= my){
+		if(jj != mx || kk!= my){
 			mx = jj;my = kk;
-	               loadImage(x,y,mx,my);
+	               //loadImage(x,y,mx,my);
+	               loadImage(x,y,jj,kk);
 		}
-               repaint();        
+               //paint();        
                e.consume();
 
    	}

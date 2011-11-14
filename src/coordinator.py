@@ -14,8 +14,6 @@ import sys
 import tempfile
 import os
 
-range = 0.0
-
 def greenlet_log_traceback (func):
     def wrapper (self, *args):
         try:
@@ -62,7 +60,6 @@ class Coordinator:
 		f.close()	
 
 	for i in filename:
-		#f = open(i, "r")
 		initimg.append(Image.open(i))
 		os.remove(i)		
 	x=0
@@ -85,7 +82,6 @@ class Coordinator:
         result = Image.new("RGBA", (w, mh))
         x = 0
         for i in res:
-                #i.show()
                 result.paste(i, (x, 0))
                 x += i.size[0]
         result.save("lol.png")
@@ -95,7 +91,8 @@ class Coordinator:
     def work (self, x, y, lx, lz):
 	cam = ((lx*100 + lz)* 100 +x )* 100  + y
 	print cam
-        jobs = [gevent.spawn (self.do_work, addr, cam) for addr in self.worker]
+	self.ratio = 1.0 / len(self.worker)
+        jobs = [gevent.spawn (self.do_work, addr, cam, i ) for i,addr in enumerate(self.worker)]
         gevent.joinall (jobs, timeout=2)
         res = []
         for i, job in enumerate (jobs):
@@ -118,10 +115,9 @@ class Coordinator:
 
     	
     @greenlet_log_traceback
-    def do_work (self, addr,cam):
-	global range
+    def do_work (self, addr,cam,total):
+	self.log.info( "worker is %s",len(self.worker))
 
-	self.ratio = 1.0 / self.count
         s = gevent.socket.socket (AF_INET, SOCK_STREAM)
         if s.connect_ex (addr) != 0:
             self.log.error ('worker %s AWOL', addr)
@@ -129,10 +125,9 @@ class Coordinator:
             return None
 	#print 'Ratio is',self.ratio
 	#si range, (range+self.ratio)
-	if range == 1.0:
-		range = 0.0
-	param = '+p '+'+SC'+str(range)+' +EC'+str((range+self.ratio))+' +K'+str(cam)
-	range += self.ratio
+	#if (range- 1.0) >= .10:
+	#	range = 0.0
+	param = '+p '+'+SC'+str(total*self.ratio)+' +EC'+str(((total+1)*self.ratio))+' +K'+str(cam)
 	self.log.info(param)
         s.sendall (param)
         s.shutdown (SHUT_WR)
