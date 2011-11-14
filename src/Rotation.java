@@ -10,39 +10,13 @@ public class Rotation extends Applet implements KeyListener,FocusListener,MouseL
     
         int x=50,y=50,mx=50,my=60;
         private Image img;
-	int low = 0, high= 99, step =5, steplook = 1 ;
+	int low = 0, high= 99, step =5;
 	boolean isButtonPressed = false;
 	boolean focussed = false;
 	boolean flag = false,f1 = false;
 	
 	Graphics bufferGraphics; 
-	//Dimension dim; 
-/*
-	private Image dbImage;
-	private Graphics dbg; 
-
-	public void update (Graphics g)
-	{
-		System.out.println("call to update\n\n");
-	      // initialize buffer
-	      if (dbImage == null)
-	      {
-		    dbImage = createImage (this.getSize().width, this.getSize().height);
-		    dbg = dbImage.getGraphics ();
-	      }
-
-	      // clear screen in background
-	      dbg.setColor (getBackground ());
-	      dbg.fillRect (0, 0, this.getSize().width, this.getSize().height);
-
-	      // draw elements in background
-	      dbg.setColor (getForeground());
-	      paint (dbg);
-
-	      // draw image on the screen
-	      g.drawImage (dbImage, 0, 0, this);
-
-	}*/
+	
 	public void update(Graphics g)
 	{
 		paint(g);
@@ -51,25 +25,27 @@ public class Rotation extends Applet implements KeyListener,FocusListener,MouseL
 	{
 		img = null;
 
+		loadImage(x,y,mx,my);
 		addKeyListener(this);
 		addMouseListener( this );
 		//addFocusListener(this);
-		//addMouseMotionListener(this);
+		addMouseMotionListener(this);
 	}
 	public void loadImage(int a,int b,int ma,int mb)
 	{
 		try
 		{	
-			 String url = "http://10.3.3.220:9998/work?x="+mx+"&y="+my+"&lx="+x+"&lz="+y;			
-			//String url = "http://127.0.0.1:9998/work?x=50&y=60&lx=50&lz=50";
-			 img = getImage(new URL(url));
+			String url = "http://10.3.3.220:9998/work?x="+mx+"&y="+my+"&lx="+x+"&lz="+y;			
+			//String url = "http://10.3.3.220:9998/work?x=y=60&lx=50&lz=50";
+			System.out.println("URL= "+url);
+			img = getImage(new URL(url));
 		}
 		catch(Exception e){}
 	}
 
 	public void paint(Graphics g)
 	{		
-		loadImage(x,y,mx,my);
+		//loadImage(x,y,mx,my);
 		
 		//g.drawImage(img, 0, 0,318,240, this);
 		g.drawImage(img, 0, 0,320,320, this);
@@ -82,16 +58,12 @@ public class Rotation extends Applet implements KeyListener,FocusListener,MouseL
 	}
    
 	public void focusGained(FocusEvent evt) {
-         // The applet now has the input focus.
-	      //focussed = true;
-	    //  repaint();  // redraw with cyan border
+        
    	}
    
 
    	public void focusLost(FocusEvent evt) {
-         // The applet has now lost the input focus.
-      		//focussed = false;
-     	 	//repaint();  // redraw without cyan border
+         
    	}
 
   	 public void keyPressed(KeyEvent evt) 
@@ -101,32 +73,36 @@ public class Rotation extends Applet implements KeyListener,FocusListener,MouseL
       		
 	      if(!f1){
 	      if (key == KeyEvent.VK_LEFT) {         
-		 x -= steplook;
+		 x -= step;
         	 if ( x<= low)
         	    x = low;        
+	               loadImage(x,y,mx,my);
         	 repaint();
       	      }
 	      if (key == KeyEvent.VK_RIGHT) {
          
-		 x += steplook;
+		 x += step;
         	 if ( x>= high)
         	    x = high;
          
+	               loadImage(x,y,mx,my);
         	 repaint();
               }
       
 	      if (key == KeyEvent.VK_UP) {
-        	 y += steplook;
+        	 y += step;
         	 if ( y>= high)
         	    y = high;
          
+	               loadImage(x,y,mx,my);
         	 repaint();
       	      }
 	      if (key == KeyEvent.VK_DOWN) {
-        	     y -= steplook;     
+        	     y -= step;     
         	     if ( y<= low)
 	             y = low;
      
+	               loadImage(x,y,mx,my);
                      repaint();
               }}
 	      
@@ -138,6 +114,7 @@ public class Rotation extends Applet implements KeyListener,FocusListener,MouseL
 		 mx -= step;
         	 if ( mx<= low)
         	    mx = low;        
+	               loadImage(x,y,mx,my);
         	 repaint();
       	      }
 	      if (key == KeyEvent.VK_RIGHT) {
@@ -145,6 +122,7 @@ public class Rotation extends Applet implements KeyListener,FocusListener,MouseL
 		 mx += step;
         	 if ( mx>= high)
         	    mx = high;
+	               loadImage(x,y,mx,my);
          
         	 repaint();
               }
@@ -153,6 +131,7 @@ public class Rotation extends Applet implements KeyListener,FocusListener,MouseL
         	 my += step;
         	 if ( my>= high)
         	    my = high;
+	               loadImage(x,y,mx,my);
          
         	 repaint();
       	      }
@@ -161,6 +140,7 @@ public class Rotation extends Applet implements KeyListener,FocusListener,MouseL
         	     if ( my<= low)
 	             my = low;
      
+	               loadImage(x,y,mx,my);
                      repaint();
               }
 		}
@@ -177,10 +157,12 @@ public class Rotation extends Applet implements KeyListener,FocusListener,MouseL
 
 	        if (ch == 'C' || ch == 'c') {
 			f1 = true;
+	               loadImage(x,y,mx,my);
 		        repaint();
       		}
 		if (ch == 'D' || ch == 'd') {
 			f1 = false;
+	               loadImage(x,y,mx,my);
 		        repaint();
       		}
    	}
@@ -193,27 +175,16 @@ public class Rotation extends Applet implements KeyListener,FocusListener,MouseL
 
 	public void mouseClicked( MouseEvent e ) {
      	 	
-		//int j,k;
-		//j=e.getX();
-		//k=e.getY();
-
-		//mx = (int)(j/3.18);
-		//my = (int)(k/2.4);
-		//System.out.println("You clicked on "+j+" "+k+"  "+mx+","+my);
-		//repaint();	
-		//e.consume();
    	}
 
 	public void mousePressed( MouseEvent e ) {  // called after a button is pressed down
-		//flag = true;
-     		 //requestFocus();
+		
    	}
   	 public void mouseReleased( MouseEvent e ) {  // called after a button is released
-		//flag = false;
-     		//repaint();
-     		e.consume();
+		
+     		//e.consume();
 	
-     		//requestFocus();
+     		
   	 }
    
    	public void mouseDragged( MouseEvent e ) {  // called during motion with buttons down
@@ -222,6 +193,19 @@ public class Rotation extends Applet implements KeyListener,FocusListener,MouseL
 
 
    	public void mouseMoved(MouseEvent e) {
+	       int j,k,jj,kk;
+               j=e.getX();
+               k=e.getY();
+
+               jj = j/8 + 30;
+               kk = k/8 + 30;
+               //System.out.println("You clicked on "+j+" "+k+"  "+mx+","+my);
+		if(jj != mx && kk!= my){
+			mx = jj;my = kk;
+	               loadImage(x,y,mx,my);
+		}
+               repaint();        
+               e.consume();
 
    	}
   

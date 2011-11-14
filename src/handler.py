@@ -18,7 +18,7 @@ def test (env, header):
 
 
 def index (env, header):
-    raise Http302 ('/static/Rotation.html')
+    raise Http302 ('/static/test.html')
 
 def worker_register (env, header):
     query = parse_qs (env.get ('QUERY_STRING', ''))

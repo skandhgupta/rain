@@ -52,6 +52,7 @@ class Coordinator:
 	filename = []
 	initimg = []
 	tmpimg = []
+	self.log.info('Total received is %s', len(res))
 	for i in res:
 		name = name = "lol" + str(cnt) + ".png"
 		cnt += 1
@@ -132,7 +133,7 @@ class Coordinator:
 		range = 0.0
 	param = '+p '+'+SC'+str(range)+' +EC'+str((range+self.ratio))+' +K'+str(cam)
 	range += self.ratio
-	#print param
+	self.log.info(param)
         s.sendall (param)
         s.shutdown (SHUT_WR)
         return socket_recv.all (s)
