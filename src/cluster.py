@@ -14,8 +14,8 @@ import struct
 
 
 #XXX
-#NO_PROXY_HACK="http_proxy=''"
-NO_PROXY_HACK=""
+NO_PROXY_HACK="http_proxy=''"
+#NO_PROXY_HACK=""
 
 PIDF_DIR = 'ven/var/run/'
 LOGF_DIR = 'ven/var/run/'
@@ -30,7 +30,7 @@ def get_ip_address(ifname):
 
 
 def my_public_ip ():
-    	return get_ip_address('eth0')
+    	#return get_ip_address('eth0')
 	return filter (lambda ip: not ip.startswith ('127.'), 
             socket.gethostbyname_ex (socket.gethostname ())[2])[0]
 
