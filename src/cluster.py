@@ -9,15 +9,29 @@ import subprocess
 import re
 import socket
 import random
+import fcntl
+import struct
+
 
 #XXX
-NO_PROXY_HACK="http_proxy=''"
+#NO_PROXY_HACK="http_proxy=''"
+NO_PROXY_HACK=""
 
 PIDF_DIR = 'ven/var/run/'
 LOGF_DIR = 'ven/var/run/'
 
+def get_ip_address(ifname):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    return socket.inet_ntoa(fcntl.ioctl(
+        s.fileno(),
+        0x8915,  # SIOCGIFADDR
+        struct.pack('256s', ifname[:15])
+    )[20:24])
+
+
 def my_public_ip ():
-    return filter (lambda ip: not ip.startswith ('127.'), 
+    	return get_ip_address('eth0')
+	return filter (lambda ip: not ip.startswith ('127.'), 
             socket.gethostbyname_ex (socket.gethostname ())[2])[0]
 
 def local_stop_workers ():
